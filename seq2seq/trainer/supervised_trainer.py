@@ -29,7 +29,7 @@ class SupervisedTrainer(object):
     """
     def __init__(self, expt_dir='experiment', loss=NLLLoss(), batch_size=64,
                  random_seed=None,
-                 checkpoint_every=100, print_every=100):
+                 checkpoint_every=100, print_every=100, input_vocab=None, output_vocab=None):
         self._trainer = "Simple Trainer"
         self.random_seed = random_seed
         if random_seed is not None:
@@ -40,7 +40,10 @@ class SupervisedTrainer(object):
         self.optimizer = None
         self.checkpoint_every = checkpoint_every
         self.print_every = print_every
-
+        
+        self.input_vocab = input_vocab
+        self.output_vocab = output_vocab
+        
         if not os.path.isabs(expt_dir):
             expt_dir = os.path.join(os.getcwd(), expt_dir)
         self.expt_dir = expt_dir
@@ -91,6 +94,7 @@ class SupervisedTrainer(object):
         avg_valid_losses = []
         
         early_stopping = EarlyStopping(patience=15, verbose=True)
+        best_acc = 0 
         
         for epoch in range(start_epoch, n_epochs + 1):
             log.debug("Epoch: %d, Step: %d" % (epoch, step))
@@ -143,6 +147,16 @@ class SupervisedTrainer(object):
                 self.optimizer.update(dev_loss, epoch)
                 avg_valid_losses.append(dev_loss)
                 log_msg += ", Dev %s: %.4f, Accuracy: %.4f" % (self.loss.name, dev_loss, accuracy)
+                early_stopping(dev_loss, model, self.optimizer, epoch, step, self.input_vocab, self.output_vocab, self.expt_dir)
+                
+                if accuracy > best_acc:
+                    log.info('accuracy increased >> best_accuracy{}, current_accuracy{}'.format(accuracy, best_acc))
+                    Checkpoint(model=model,
+                               optimizer=self.optimizer,
+                               epoch=epoch, step=step,
+                               input_vocab=self.input_vocab,
+                               output_vocab=self.output_vocab).save(self.expt_dir +'/best_accuracy')
+                    best_acc = accuracy
                 model.train(mode=True)
             else:
                 self.optimizer.update(epoch_loss_avg, epoch)

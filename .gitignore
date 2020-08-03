@@ -4,6 +4,7 @@ checkpoint
 checkpoint/*
 data/
 supervised/
+experiment/
 
 # Operating system related file
 .DS_Store

@@ -33,7 +33,7 @@ class EarlyStopping:
         if self.best_score is None:
             self.best_score = score
             Checkpoint(model=model, optimizer=optimizer, epoch=epoch, step=step,
-                       input_vocab=input_vocab, output_vocab=output_vocab).save(expt_dir +'/best_model')
+                       input_vocab=input_vocab, output_vocab=output_vocab).save(expt_dir +'/lowest_loss')
         elif score < self.best_score + self.delta:
             self.counter += 1
             print(f'EarlyStopping counter: {self.counter} out of {self.patience}')

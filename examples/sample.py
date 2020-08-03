@@ -119,7 +119,7 @@ else:
     # train
     t = SupervisedTrainer(loss=loss, batch_size=64,
                           checkpoint_every=1800,
-                          print_every=100, expt_dir=opt.expt_dir)
+                          print_every=100, expt_dir=opt.expt_dir, input_vocab = input_vocab, output_vocab=output_vocab)
 
     seq2seq = t.train(seq2seq, train,
                       num_epochs=50, dev_data=dev,
